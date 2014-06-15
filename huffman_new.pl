@@ -32,3 +32,28 @@ i_sort([H|T],Acc,Sorted):-insert(H,Acc,NAcc),i_sort(T,NAcc,Sorted).
 insert(X,[Y|T],[Y|NT]):-sort_rule(>, X, Y),!,insert(X,T,NT).
 insert(X,[Y|T],[X,Y|T]):-sort_rule(<, X, Y),!.
 insert(X,[],[X]).
+
+decode([0|Bits], HuffmanTree, Message) :-
+	right_tree(HuffmanTree, t([Symbol, Weight],nil ,nil)),
+	!,
+	decode(Bits, HuffmanTree, PartialMessage),
+	append(Symbol, PartialMessage, Message).
+decode([0|Bits], HuffmanTree, Message) :-
+	right_tree(HuffmanTree, RightTree),
+	!,
+	decode(Bits, RightTree, Message).
+decode([1|Bits], HuffmanTree, Message) :-
+	left_tree(HuffmanTree, t([Symbol, Weight],nil ,nil)),
+	!,
+	decode(Bits, HuffmanTree, PartialMessage),
+	append(Symbol, PartialMessage, Message).
+decode([1|Bits], HuffmanTree, Message) :-
+	left_tree(HuffmanTree, LeftTree),
+	!,
+	decode(Bits, LeftTree, Message).
+decode([], _, []) :- !.
+decode(_, [], []) :- !.
+
+right_tree(t(_,_,RightTree), RightTree).
+left_tree(t(_,LeftTree,_), LeftTree).
+	
