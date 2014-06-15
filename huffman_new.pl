@@ -33,26 +33,25 @@ insert(X,[Y|T],[Y|NT]):-sort_rule(>, X, Y),!,insert(X,T,NT).
 insert(X,[Y|T],[X,Y|T]):-sort_rule(<, X, Y),!.
 insert(X,[],[X]).
 
-decode([0|Bits], HuffmanTree, Message) :-
-	right_tree(HuffmanTree, t([Symbol, Weight],nil ,nil)),
-	!,
-	decode(Bits, HuffmanTree, PartialMessage),
-	append(Symbol, PartialMessage, Message).
-decode([0|Bits], HuffmanTree, Message) :-
+
+decode(Bits, HuffmanTree, Message) :-
+	decode_aux(Bits, HuffmanTree, Character, RemainingBits),
+	decode(RemainingBits, HuffmanTree, Rest),
+	append(Character, Rest, Message).
+decode([], _, []).
+
+decode_aux([0|Bits], HuffmanTree, Symbol, Bits) :-
+	right_tree(HuffmanTree, t([Symbol, Weight],nil ,nil)), !.
+decode_aux([0|Bits], HuffmanTree, Message, RemainingBits) :-
 	right_tree(HuffmanTree, RightTree),
 	!,
-	decode(Bits, RightTree, Message).
-decode([1|Bits], HuffmanTree, Message) :-
-	left_tree(HuffmanTree, t([Symbol, Weight],nil ,nil)),
-	!,
-	decode(Bits, HuffmanTree, PartialMessage),
-	append(Symbol, PartialMessage, Message).
-decode([1|Bits], HuffmanTree, Message) :-
+	decode_aux(Bits, RightTree, Message, RemainingBits).
+decode_aux([1|Bits], HuffmanTree, Symbol, Bits) :-
+	left_tree(HuffmanTree, t([Symbol, Weight],nil ,nil)), !.
+decode_aux([1|Bits], HuffmanTree, Message, RemainingBits) :-
 	left_tree(HuffmanTree, LeftTree),
 	!,
-	decode(Bits, LeftTree, Message).
-decode([], _, []) :- !.
-decode(_, [], []) :- !.
+	decode_aux(Bits, LeftTree, Message, RemainingBits).
 
 right_tree(t(_,_,RightTree), RightTree).
 left_tree(t(_,LeftTree,_), LeftTree).
