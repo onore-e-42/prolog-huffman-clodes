@@ -53,6 +53,24 @@ decode_aux([1|Bits], HuffmanTree, Message, RemainingBits) :-
 	!,
 	decode_aux(Bits, LeftTree, Message, RemainingBits).
 
+encode([Char|RemainingMessage], HuffmanTree, Bits) :-
+	encode_aux(Char, HuffmanTree, Code),
+	encode(RemainingMessage, HuffmanTree, Rest),
+	append(Code, Rest, Bits).
+encode([], HuffmanTree, []).
+
+encode_aux(Char, t(_,t([Symbol, Weight], LeftTree, RightTree),_), Code) :-
+	member(Char, Symbol),
+	!,
+	encode_aux(Char, t([Symbol, Weight], LeftTree, RightTree), Rest),
+	append([1], Rest, Code).
+encode_aux(Char, t(_,_,t([Symbol, Weight], LeftTree, RightTree)), Code) :-
+	member(Char, Symbol),
+	!,
+	encode_aux(Char, t([Symbol, Weight], LeftTree, RightTree), Rest),
+	append([0], Rest, Code).
+encode_aux(Char, t([[Char], Weight], nil, nil), []).
+
 right_tree(t(_,_,RightTree), RightTree).
 left_tree(t(_,LeftTree,_), LeftTree).
 	
