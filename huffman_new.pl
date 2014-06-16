@@ -22,7 +22,7 @@ unite(t([SymbolA, WeightA], RightA, LeftA), t([SymbolB, WeightB], RightB, LeftB)
 	append(SymbolA, SymbolB, SymbolAB),
 	WeightAB is WeightA + WeightB.
 
-sort_rule(Delta, t([SymbolA,WeightA],_,_), t([SymbolB, WeightB],_,_)) :-
+sort_rule(Delta, t([_,WeightA],_,_), t([_, WeightB],_,_)) :-
 	compare(Delta, WeightA, WeightB).
 
 insert_sort(List,Sorted):-i_sort(List,[],Sorted).
@@ -41,13 +41,13 @@ decode(Bits, HuffmanTree, Message) :-
 decode([], _, []).
 
 decode_aux([0|Bits], HuffmanTree, Symbol, Bits) :-
-	right_tree(HuffmanTree, t([Symbol, Weight],nil ,nil)), !.
+	right_tree(HuffmanTree, t([Symbol, _],nil ,nil)), !.
 decode_aux([0|Bits], HuffmanTree, Message, RemainingBits) :-
 	right_tree(HuffmanTree, RightTree),
 	!,
 	decode_aux(Bits, RightTree, Message, RemainingBits).
 decode_aux([1|Bits], HuffmanTree, Symbol, Bits) :-
-	left_tree(HuffmanTree, t([Symbol, Weight],nil ,nil)), !.
+	left_tree(HuffmanTree, t([Symbol, _],nil ,nil)), !.
 decode_aux([1|Bits], HuffmanTree, Message, RemainingBits) :-
 	left_tree(HuffmanTree, LeftTree),
 	!,
@@ -57,7 +57,7 @@ encode([Char|RemainingMessage], HuffmanTree, Bits) :-
 	encode_aux(Char, HuffmanTree, Code),
 	encode(RemainingMessage, HuffmanTree, Rest),
 	append(Code, Rest, Bits).
-encode([], HuffmanTree, []).
+encode([], _, []).
 
 encode_aux(Char, t(_,t([Symbol, Weight], LeftTree, RightTree),_), Code) :-
 	member(Char, Symbol),
@@ -69,8 +69,14 @@ encode_aux(Char, t(_,_,t([Symbol, Weight], LeftTree, RightTree)), Code) :-
 	!,
 	encode_aux(Char, t([Symbol, Weight], LeftTree, RightTree), Rest),
 	append([0], Rest, Code).
-encode_aux(Char, t([[Char], Weight], nil, nil), []).
+encode_aux(Char, t([[Char], _], nil, nil), []).
 
 right_tree(t(_,_,RightTree), RightTree).
 left_tree(t(_,LeftTree,_), LeftTree).
-	
+
+generate_symbol_bits_table(t([[Char|Symbol], Weight],LeftTree ,RightTree), SymbolBitsTable) :-
+	encode([Char], t([[Char|Symbol], Weight],LeftTree ,RightTree), Code),
+	!,
+	generate_symbol_bits_table(t([Symbol, Weight],LeftTree ,RightTree), Rest),
+	append([[Char, Code]], Rest, SymbolBitsTable).
+generate_symbol_bits_table(t([[],_], _, _), []).
